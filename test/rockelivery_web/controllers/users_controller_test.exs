@@ -3,6 +3,8 @@ defmodule RockeliveryWeb.UsersControllerTest do
 
   import Rockelivery.Factory
 
+  alias Rockelivery.User
+
   describe "create/2" do
     test "when all params are valid, creates the user", %{conn: conn} do
       params = build(:user_body)
@@ -51,6 +53,33 @@ defmodule RockeliveryWeb.UsersControllerTest do
         |> response(:no_content)
 
       assert response == ""
+    end
+  end
+
+  describe "update/2" do
+    test "when all params are valid, updates the user", %{conn: conn} do
+      insert(:user)
+
+      id = "5484b227-0f8f-4e84-ab01-41fd7c4c43dc"
+
+      params = %User{id: id, name: "Joao", age: 20}
+
+      response =
+        conn
+        |> put(Routes.users_path(conn, :update, params))
+        |> json_response(:ok)
+
+      assert %{
+               "user" => %{
+                 "address" => "Rua 15",
+                 "age" => 27,
+                 "cep" => "12345678",
+                 "cpf" => "12345678900",
+                 "email" => "grhamm@email.com",
+                 "id" => _id,
+                 "name" => "Joao"
+               }
+             } = response
     end
   end
 end
