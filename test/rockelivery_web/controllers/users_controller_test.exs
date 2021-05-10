@@ -58,15 +58,17 @@ defmodule RockeliveryWeb.UsersControllerTest do
 
   describe "update/2" do
     test "when all params are valid, updates the user", %{conn: conn} do
-      insert(:user)
+      user = insert(:user)
 
-      id = "5484b227-0f8f-4e84-ab01-41fd7c4c43dc"
+      %User{id: id} = user
 
-      params = %User{id: id, name: "Joao", age: 20}
+      params = %{
+        "name" => "joao"
+      }
 
       response =
         conn
-        |> put(Routes.users_path(conn, :update, params))
+        |> put(Routes.users_path(conn, :update, id, params))
         |> json_response(:ok)
 
       assert %{
@@ -77,7 +79,7 @@ defmodule RockeliveryWeb.UsersControllerTest do
                  "cpf" => "12345678900",
                  "email" => "grhamm@email.com",
                  "id" => _id,
-                 "name" => "Joao"
+                 "name" => "joao"
                }
              } = response
     end
