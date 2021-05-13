@@ -1,6 +1,8 @@
 defmodule Rockelivery.Orders.Create do
   import Ecto.Query
 
+  alias Ecto.UUID
+
   alias Rockelivery.{Error, Item, Order, Repo}
 
   alias Rockelivery.Orders.ValidateAndMultiplyItems
@@ -14,11 +16,20 @@ defmodule Rockelivery.Orders.Create do
   defp fetch_items(%{"items" => items_params}) do
     items_ids = Enum.map(items_params, fn item -> item["id"] end)
 
-    query = from item in Item, where: item.id in ^items_ids
+    with false <- id_validations(items_ids) do
+      query = from item in Item, where: item.id in ^items_ids
 
-    query
-    |> Repo.all()
-    |> ValidateAndMultiplyItems.call(items_ids, items_params)
+      query
+      |> Repo.all()
+      |> ValidateAndMultiplyItems.call(items_ids, items_params)
+    end
+  end
+
+  defp id_validations(items_id) do
+    case Enum.any?(items_id, fn id -> UUID.cast(id) == :error end) do
+      true -> {:error, "Invalid ids!"}
+      false -> false
+    end
   end
 
   defp handle_items({:error, result}, _params), do: {:error, Error.build(:bad_request, result)}
