@@ -2,8 +2,10 @@ defmodule Rockelivery.Order do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Ecto.Changeset
   alias Ecto.Enum
-  alias Rockelivery.{Item, User}
+  alias Ecto.UUID
+  alias Rockelivery.{Item, Repo, User}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -12,7 +14,7 @@ defmodule Rockelivery.Order do
 
   @payment_methods [:money, :credit_card, :debit_card]
 
-  @derive {Jason.Encoder, only: @required_params ++ [:id]}
+  @derive {Jason.Encoder, only: @required_params ++ [:id, :items]}
 
   schema "orders" do
     field :address, :string
@@ -32,5 +34,41 @@ defmodule Rockelivery.Order do
     |> put_assoc(:items, items)
     |> validate_length(:address, min: 5)
     |> validate_length(:comments, min: 5)
+    |> check_user_uuid()
+  end
+
+  defp check_user_uuid(%Changeset{changes: %{user_id: user_id}, valid?: true} = changeset) do
+    case UUID.cast(user_id) do
+      :error ->
+        handle_custom_changeset_errors(changeset,
+          user_id: {"invalid uuid", [validation: :check_user_uuid]}
+        )
+
+      {:ok, uuid} ->
+        case user_exists?(uuid) do
+          true ->
+            changeset
+
+          false ->
+            handle_custom_changeset_errors(changeset,
+              user_id: {"user doesn't exists", [validation: :user_exists?]}
+            )
+        end
+    end
+  end
+
+  defp check_user_uuid(changeset), do: changeset
+
+  defp user_exists?(id) do
+    case Repo.get(User, id) do
+      nil -> false
+      _user -> true
+    end
+  end
+
+  defp handle_custom_changeset_errors(changeset, error) do
+    changeset
+    |> Map.put(:valid?, false)
+    |> Map.put(:errors, changeset.errors ++ error)
   end
 end
