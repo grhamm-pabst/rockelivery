@@ -40,6 +40,8 @@ defmodule Rockelivery.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:tesla, "~> 1.4.0"},
+      {:hackney, "~> 1.17.0"},
       {:ex_machina, "~> 2.7.0"},
       {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.5.8"},
