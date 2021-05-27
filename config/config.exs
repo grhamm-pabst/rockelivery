@@ -7,6 +7,8 @@
 # General application configuration
 use Mix.Config
 
+config :rockelivery, Rockelivery.Users.Create, via_cep_adapter: Rockelivery.ViaCep.Client
+
 config :rockelivery,
   ecto_repos: [Rockelivery.Repo]
 
