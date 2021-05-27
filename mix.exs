@@ -56,6 +56,7 @@ defmodule Rockelivery.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:pbkdf2_elixir, "~> 1.4"},
       {:bypass, "~> 2.1", only: :test},
+      {:mox, "~> 1.0", only: :test},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
     ]
   end
