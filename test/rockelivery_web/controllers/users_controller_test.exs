@@ -7,25 +7,14 @@ defmodule RockeliveryWeb.UsersControllerTest do
 
   alias Rockelivery.User
   alias Rockelivery.ViaCep.ClientMock
+  alias RockeliveryWeb.Auth.Guardian
 
   describe "create/2" do
     test "when all params are valid, creates the user", %{conn: conn} do
       params = build(:user_body)
 
       expect(ClientMock, :get_cep_info, fn _cep ->
-        {:ok,
-         %{
-           "bairro" => "Sé",
-           "cep" => "01001-000",
-           "complemento" => "lado ímpar",
-           "ddd" => "11",
-           "gia" => "1004",
-           "ibge" => "3550308",
-           "localidade" => "São Paulo",
-           "logradouro" => "Praça da Sé",
-           "siafi" => "7107",
-           "uf" => "SP"
-         }}
+        {:ok, build(:cep_info)}
       end)
 
       response =
@@ -62,8 +51,15 @@ defmodule RockeliveryWeb.UsersControllerTest do
   end
 
   describe "delete/2" do
+    setup %{conn: conn} do
+      user = insert(:user)
+      {:ok, token, _claims} = Guardian.encode_and_sign(user)
+      conn = put_req_header(conn, "authorization", "Bearer #{token}")
+
+      {:ok, conn: conn}
+    end
+
     test "when there is a user with the given id, deletes the user", %{conn: conn} do
-      insert(:user)
       id = "5484b227-0f8f-4e84-ab01-41fd7c4c43dc"
 
       response =
@@ -76,9 +72,15 @@ defmodule RockeliveryWeb.UsersControllerTest do
   end
 
   describe "update/2" do
-    test "when all params are valid, updates the user", %{conn: conn} do
+    setup %{conn: conn} do
       user = insert(:user)
+      {:ok, token, _claims} = Guardian.encode_and_sign(user)
+      conn = put_req_header(conn, "authorization", "Bearer #{token}")
 
+      {:ok, conn: conn, user: user}
+    end
+
+    test "when all params are valid, updates the user", %{conn: conn, user: user} do
       %User{id: id} = user
 
       params = %{
