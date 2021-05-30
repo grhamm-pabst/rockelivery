@@ -48,7 +48,7 @@ defmodule Rockelivery.UserTest do
         email: ["has invalid format"]
       }
 
-      assert errors_on(response) == expected_response
+      assert errors_on(response) == "banana"
     end
   end
 end
